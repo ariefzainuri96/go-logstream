@@ -81,7 +81,7 @@ func (s *ProjectStore) AddProject(ctx context.Context, userId uint, req request.
 func (s *ProjectStore) GetProject(ctx context.Context, userId uint, req request.PaginationRequest) (utils.PaginateResult[entity.Project], error) {
 	var projects []entity.Project
 
-	query := s.db.GormDb.Find(&projects)
+	query := s.db.GormDb.Where("user_id = ?", userId).Find(&projects)
 
 	var searchAllQuery string
 
@@ -116,7 +116,7 @@ func (s *ProjectStore) DeleteProject(ctx context.Context, projectId uint) error 
 }
 
 func (s *ProjectStore) UpdateProject(ctx context.Context, projectId uint, req request.AddProjectRequest) (entity.Project, error) {
-	project := entity.Project{
+	project := entity.Project{		
 		Name:       req.Name,
 		Slug:       req.Slug,
 		WebhookUrl: req.WebhookUrl,
@@ -125,6 +125,7 @@ func (s *ProjectStore) UpdateProject(ctx context.Context, projectId uint, req re
 	result := s.db.ExecWithTimeoutVal(ctx, func(tx *gorm.DB) *gorm.DB {
 		return tx.
 			Model(&entity.Project{}).
+			Where("id = ?", projectId).
 			Updates(project)
 	})
 

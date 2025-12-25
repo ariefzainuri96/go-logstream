@@ -18,8 +18,9 @@ type UpdateEntity struct {
 }
 
 // @Model
-type SoftDeleteEntity struct {
+type UpdateDeleteEntity struct {
 	BaseEntity
+	UpdatedAt *time.Time `json:"updated_at"`
 	DeletedAt *gorm.DeletedAt `gorm:"index" json:"deleted_at"`
 	// DeletedAt *time.Time `gorm:"index" json:"deleted_at"`
 }

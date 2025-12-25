@@ -3,6 +3,7 @@ package controller
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"github.com/ariefzainuri96/go-logstream/cmd/api/dto/request"
 	"github.com/ariefzainuri96/go-logstream/cmd/api/dto/response"
@@ -79,6 +80,13 @@ func (app *Application) addProject(w http.ResponseWriter, r *http.Request) {
 func (app *Application) getProject(w http.ResponseWriter, r *http.Request) {
 	var data request.PaginationRequest
 
+	user, ok := middleware.GetUserFromContext(r)
+
+	if !ok {
+		utils.RespondError(w, http.StatusUnauthorized, "Unauthorized, please re login!")
+		return
+	}
+
 	err := decoder.Decode(&data, r.URL.Query())
 
 	if err != nil {
@@ -86,21 +94,21 @@ func (app *Application) getProject(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// product, err := app.store.IProduct.GetProduct(r.Context(), data)
+	result, err := app.Service.IProject.GetProject(r.Context(), user["user_id"].(uint), data)
 
-	// if err != nil {
-	// 	utils.RespondError(w, http.StatusInternalServerError, "Internal server error")
-	// 	return
-	// }
+	if err != nil {
+		utils.RespondError(w, http.StatusInternalServerError, "Internal server error")
+		return
+	}
 
-	// utils.WriteJSON(w, http.StatusOK, response.ProductsResponse{
-	// 	BaseResponse: response.BaseResponse{
-	// 		Message: "Success",
-	// 		Status:  http.StatusOK,
-	// 	},
-	// 	Products:   product.Data,
-	// 	Pagination: product.Pagination,
-	// })
+	utils.WriteJSON(w, http.StatusOK, response.ProjectsResponse{
+		BaseResponse: response.BaseResponse{
+			Message: "Success",
+			Status:  http.StatusOK,
+		},
+		Projects:   result.Data,
+		Pagination: result.Pagination,
+	})
 }
 
 // @Summary      Delete Project
@@ -114,24 +122,24 @@ func (app *Application) getProject(w http.ResponseWriter, r *http.Request) {
 // @Failure      404  				{object}  response.BaseResponse
 // @Router       /projects/{id}		[delete]
 func (app *Application) deleteProject(w http.ResponseWriter, r *http.Request) {
-	// id, err := strconv.Atoi(r.PathValue("id"))
+	id, err := strconv.Atoi(r.PathValue("id"))
 
-	// if err != nil {
-	// 	utils.RespondError(w, http.StatusBadRequest, "Invalid id")
-	// 	return
-	// }
+	if err != nil {
+		utils.RespondError(w, http.StatusBadRequest, "Invalid id")
+		return
+	}
 
-	// err = app.store.IProduct.DeleteProduct(r.Context(), uint(id))
+	err = app.Service.IProject.DeleteProject(r.Context(), uint(id))
 
-	// if err != nil {
-	// 	utils.RespondError(w, http.StatusInternalServerError, err.Error())
-	// 	return
-	// }
+	if err != nil {
+		utils.RespondError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
 
-	// utils.WriteJSON(w, http.StatusOK, response.BaseResponse{
-	// 	Status:  http.StatusOK,
-	// 	Message: "Success delete product",
-	// })
+	utils.WriteJSON(w, http.StatusOK, response.BaseResponse{
+		Status:  http.StatusOK,
+		Message: "Success delete product",
+	})
 }
 
 // @Summary      Update Project
@@ -147,42 +155,37 @@ func (app *Application) deleteProject(w http.ResponseWriter, r *http.Request) {
 // @Failure      404  				{object}  response.BaseResponse
 // @Router       /projects/{id}		[put]
 func (app *Application) updateProject(w http.ResponseWriter, r *http.Request) {
-	// productID, err := strconv.Atoi(r.PathValue("id"))
+	var data request.AddProjectRequest
+	productID, err := strconv.Atoi(r.PathValue("id"))
 
-	// if err != nil {
-	// 	utils.RespondError(w, http.StatusBadRequest, "Invalid id")
-	// 	return
-	// }
+	if err != nil {
+		utils.RespondError(w, http.StatusBadRequest, "Invalid id")
+		return
+	}
 
-	// // Decode request body into a map
-	// var updateData map[string]any
-	// err = json.NewDecoder(r.Body).Decode(&updateData)
-	// if err != nil {
-	// 	utils.RespondError(w, http.StatusBadRequest, "Invalid request")
-	// 	return
-	// }
-	// defer r.Body.Close()
+	// Decode request body into a map
+	err = json.NewDecoder(r.Body).Decode(&data)
 
-	// // Ensure there's data to update
-	// if len(updateData) == 0 {
-	// 	http.Error(w, "No fields to update", http.StatusBadRequest)
-	// 	return
-	// }
+	if err != nil {
+		utils.RespondError(w, http.StatusBadRequest, "Invalid request")
+		return
+	}
+	defer r.Body.Close()
 
-	// product, err := app.store.IProduct.PatchProduct(r.Context(), uint(productID), updateData)
+	project, err := app.Service.IProject.UpdateProject(r.Context(), uint(productID), data)
 
-	// if err != nil {
-	// 	utils.RespondError(w, http.StatusInternalServerError, err.Error())
-	// 	return
-	// }
+	if err != nil {
+		utils.RespondError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
 
-	// utils.WriteJSON(w, http.StatusOK, response.ProductResponse{
-	// 	BaseResponse: response.BaseResponse{
-	// 		Status:  http.StatusOK,
-	// 		Message: "Success patch product",
-	// 	},
-	// 	Product: product,
-	// })
+	utils.WriteJSON(w, http.StatusOK, response.ProjectResponse{
+		BaseResponse: response.BaseResponse{
+			Status:  http.StatusOK,
+			Message: "Success patch product",
+		},
+		Project: project,
+	})
 }
 
 func (app *Application) ProjectController() *http.ServeMux {

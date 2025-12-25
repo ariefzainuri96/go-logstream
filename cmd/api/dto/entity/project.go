@@ -6,7 +6,7 @@ import (
 
 // @Model
 type Project struct {
-	BaseEntity
+	UpdateEntity
 	UserId     uint   `gorm:"type:int;not null;column:user_id" json:"user_id"`
 	// User       User   `json:"user"`
 	Name       string `gorm:"type:varchar(255);not null;column:name" json:"name"`
