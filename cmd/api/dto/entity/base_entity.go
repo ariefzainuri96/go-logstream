@@ -1,0 +1,24 @@
+package entity
+
+import (
+	"gorm.io/gorm"
+	"time"
+)
+
+// @Model
+type BaseEntity struct {
+	ID        uint      `gorm:"primarykey" json:"id"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+type UpdateEntity struct {
+	BaseEntity
+	UpdatedAt *time.Time `json:"updated_at"`
+}
+
+// @Model
+type SoftDeleteEntity struct {
+	BaseEntity
+	DeletedAt *gorm.DeletedAt `gorm:"index" json:"deleted_at"`
+	// DeletedAt *time.Time `gorm:"index" json:"deleted_at"`
+}
