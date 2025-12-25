@@ -40,7 +40,7 @@ func Logging(next http.Handler, logger *zap.Logger) http.Handler {
 
 		// Put into context
 		ctx := context.WithValue(r.Context(), CtxRequestID, reqID)
-		r = r.WithContext(ctx) // IMPORTANT
+		r = r.WithContext(ctx)
 
 		// Limit size
 		const maxSize = 2048
@@ -67,8 +67,6 @@ func Logging(next http.Handler, logger *zap.Logger) http.Handler {
 		wrapped := &wrappedWriter{w, http.StatusOK, bytes.Buffer{}}
 
 		if r.Method != http.MethodGet {
-			// --- REQUEST BODY LOGGING ---
-
 			// Read the original body stream entirely
 			requestBody, err := io.ReadAll(r.Body)
 			if err != nil {
@@ -80,13 +78,13 @@ func Logging(next http.Handler, logger *zap.Logger) http.Handler {
 			}
 
 			// Log the body
-			logger.Info("REQUEST", zap.String("Method", r.Method), zap.String("Path", r.URL.Path), zap.String("Body", string(requestBody)))
+			logger.Info("REQUEST", zap.String("RequestId", reqID), zap.String("Method", r.Method), zap.String("Path", r.URL.Path), zap.String("Body", string(requestBody)))
 
 			// Replace the Request Body
 			// CRITICAL: Give the buffered body back to the request for downstream handlers
 			r.Body = io.NopCloser(bytes.NewBuffer(requestBody))
 		} else {
-			logger.Info("REQUEST", zap.String("Method", r.Method), zap.String("Path", fmt.Sprintf("%v%v", r.URL.Path, query.String())))
+			logger.Info("REQUEST", zap.String("RequestId", reqID), zap.String("Method", r.Method), zap.String("Path", fmt.Sprintf("%v%v", r.URL.Path, query.String())))
 		}
 
 		// --- Execute Handler Chain ---
@@ -94,6 +92,7 @@ func Logging(next http.Handler, logger *zap.Logger) http.Handler {
 
 		// Log the captured status, path, latency, and captured response body
 		logger.Info("RESPONSE",
+			zap.String("RequestId", reqID),
 			zap.Int("Code", wrapped.statusCode),
 			zap.String("Method", r.Method),
 			zap.String("Path", fmt.Sprintf("%v%v", r.URL.Path, query.String())),

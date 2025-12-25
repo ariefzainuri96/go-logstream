@@ -7,11 +7,13 @@ import (
 )
 
 type Service struct {
-	IAuth interfaces.IAuth
+	IAuth    interfaces.IAuth
+	IProject interfaces.IProject
 }
 
 func NewService(store store.Storage, logger *zap.Logger) Service {
 	return Service{
 		IAuth: NewAuthService(store, logger),
+		IProject: NewProjectService(store, logger),
 	}
 }

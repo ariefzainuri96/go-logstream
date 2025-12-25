@@ -91,7 +91,7 @@ func main() {
 	// WaitGroup to wait for servers to stop
 	var wg sync.WaitGroup
 
-	store := store.NewStorage(gorm)
+	store := store.NewStorage(gorm, logger)
 	service := service.NewService(store, logger)
 
 	application := &controller.Application{

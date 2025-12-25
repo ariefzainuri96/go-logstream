@@ -54,9 +54,9 @@ func generateToken(email string, id int) (string, error) {
 	jwtSecret := strings.TrimSpace(os.Getenv("SECRET_KEY"))
 
 	claims := jwt.MapClaims{
-		"user_id":  id,
-		"email":    email,
-		"exp":      time.Now().Add(time.Hour * 24 * 30).Unix(), // Token valid for 30 day
+		"user_id": id,
+		"email":   email,
+		"exp":     time.Now().Add(time.Hour * 24 * 30).Unix(), // Token valid for 30 day
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -92,7 +92,7 @@ func (store *AuthStore) Register(ctx context.Context, body request.RegisterReque
 
 	user := entity.User{
 		Email:    body.Email,
-		Password: string(hashedPassword),		
+		Password: string(hashedPassword),
 	}
 
 	err = store.gormDb.ExecWithTimeoutErr(ctx, func(tx *gorm.DB) error {

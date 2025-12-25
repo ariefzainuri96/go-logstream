@@ -13,7 +13,6 @@ import (
 
 // Key to store user information in context
 type contextKey string
-
 const UserContextKey contextKey = "user"
 
 // Function to get user data from request
@@ -23,9 +22,9 @@ func GetUserFromContext(r *http.Request) (map[string]any, bool) {
 }
 
 /*
-This Authentication middleware usage is for route
+	This Authentication middleware usage is for route
 
-mux.Handle("/v1/product/", middleware.Authentication(http.StripPrefix("/v1/product", app.ProductRouter())))
+	mux.Handle("/v1/product/", middleware.Authentication(http.StripPrefix("/v1/product", app.ProductRouter())))
 */
 func Authentication(next http.Handler) http.Handler {
 	jwtSecret := os.Getenv("SECRET_KEY")
@@ -66,7 +65,7 @@ func Authentication(next http.Handler) http.Handler {
 
 		// Store the user data in the request context
 		ctx := context.WithValue(r.Context(), UserContextKey, map[string]any{
-			"user_id":  int(userId),
+			"user_id":  uint(userId),
 			"email":    email,
 			"is_admin": isAdmin,
 		})
@@ -76,9 +75,9 @@ func Authentication(next http.Handler) http.Handler {
 }
 
 /*
-This AdminHandler usage is for each endpoint
+	This AdminHandler usage is for each endpoint
 
-authRouter.HandleFunc("POST /login", middleware.AdminHandler(app.login))
+	authRouter.HandleFunc("POST /login", middleware.AdminHandler(app.login))
 */
 func AdminHandler(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -101,9 +100,9 @@ func AdminHandler(next http.HandlerFunc) http.HandlerFunc {
 }
 
 /*
-This UserHandler usage is for each endpoint
+	This UserHandler usage is for each endpoint
 
-authRouter.HandleFunc("POST /login", middleware.UserHandler(app.login))
+	authRouter.HandleFunc("POST /login", middleware.UserHandler(app.login))
 */
 func UserHandler(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {

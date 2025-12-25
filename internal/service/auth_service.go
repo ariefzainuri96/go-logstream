@@ -9,7 +9,6 @@ import (
 	"go.uber.org/zap"
 )
 
-// AuthServiceImpl implements the RPC methods defined in auth.proto
 type AuthServiceImpl struct {
 	logger *zap.Logger
 	store  store.Storage

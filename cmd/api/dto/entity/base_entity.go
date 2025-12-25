@@ -11,6 +11,7 @@ type BaseEntity struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
+// @Model
 type UpdateEntity struct {
 	BaseEntity
 	UpdatedAt *time.Time `json:"updated_at"`

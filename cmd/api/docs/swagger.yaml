@@ -1,5 +1,46 @@
-basePath: /v1
 definitions:
+  entity.Project:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      slug:
+        type: string
+      user:
+        $ref: '#/definitions/entity.User'
+      user_id:
+        type: integer
+      webhook_url:
+        type: string
+    type: object
+  entity.User:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      password:
+        type: string
+    type: object
+  request.AddProjectRequest:
+    properties:
+      name:
+        maxLength: 255
+        type: string
+      slug:
+        maxLength: 255
+        type: string
+      webhook_url:
+        type: string
+    required:
+    - name
+    - slug
+    type: object
   request.LoginRequest:
     properties:
       email:
@@ -14,13 +55,10 @@ definitions:
     properties:
       email:
         type: string
-      name:
-        type: string
       password:
         type: string
     required:
     - email
-    - name
     - password
     type: object
   response.BaseResponse:
@@ -36,8 +74,6 @@ definitions:
         type: string
       id:
         type: integer
-      name:
-        type: string
       token:
         type: string
     type: object
@@ -47,6 +83,39 @@ definitions:
         $ref: '#/definitions/response.LoginData'
       message:
         type: string
+      status:
+        type: integer
+    type: object
+  response.PaginationMetadata:
+    properties:
+      page:
+        type: integer
+      page_size:
+        type: integer
+      total_data:
+        type: integer
+      total_page:
+        type: integer
+    type: object
+  response.ProjectResponse:
+    properties:
+      message:
+        type: string
+      project:
+        $ref: '#/definitions/entity.Project'
+      status:
+        type: integer
+    type: object
+  response.ProjectsResponse:
+    properties:
+      message:
+        type: string
+      pagination:
+        $ref: '#/definitions/response.PaginationMetadata'
+      projects:
+        items:
+          $ref: '#/definitions/entity.Project'
+        type: array
       status:
         type: integer
     type: object
@@ -123,6 +192,200 @@ paths:
       summary: Register
       tags:
       - auth
+  /projects/:
+    get:
+      consumes:
+      - application/json
+      description: Get All Project
+      parameters:
+      - in: query
+        name: orderBy
+        type: string
+      - in: query
+        name: page
+        required: true
+        type: integer
+      - in: query
+        name: pageSize
+        required: true
+        type: integer
+      - in: query
+        name: searchAll
+        type: string
+      - in: query
+        name: searchField
+        type: string
+      - in: query
+        name: searchValue
+        type: string
+      - in: query
+        name: sort
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.ProjectsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get Project
+      tags:
+      - project
+    post:
+      consumes:
+      - application/json
+      description: Add new Project
+      parameters:
+      - description: Add Project request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.AddProjectRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.ProjectResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Add Project
+      tags:
+      - project
+  /projects/{id}:
+    delete:
+      description: Delete Project
+      parameters:
+      - description: Project ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.BaseResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete Project
+      tags:
+      - project
+    put:
+      consumes:
+      - application/json
+      description: Update Project
+      parameters:
+      - description: Project ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Add Project request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.AddProjectRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.ProjectResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Update Project
+      tags:
+      - project
+  /public/projects/{projectId}:
+    get:
+      consumes:
+      - application/json
+      description: Get All Project
+      parameters:
+      - in: query
+        name: orderBy
+        type: string
+      - in: query
+        name: page
+        required: true
+        type: integer
+      - in: query
+        name: pageSize
+        required: true
+        type: integer
+      - in: query
+        name: searchAll
+        type: string
+      - in: query
+        name: searchField
+        type: string
+      - in: query
+        name: searchValue
+        type: string
+      - in: query
+        name: sort
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.ProjectsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get All Project
+      tags:
+      - public
 securityDefinitions:
   ApiKeyAuth:
     description: Type "Bearer" followed by a space and JWT token.
