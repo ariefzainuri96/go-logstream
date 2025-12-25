@@ -5,12 +5,12 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"strings"
 	"time"
 
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 )
 
 type ctxKey string
@@ -19,10 +19,10 @@ const (
 	CtxRequestID ctxKey = "request-id"
 )
 
-func Logging(next http.Handler) http.Handler {
+func Logging(next http.Handler, logger *zap.Logger) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
-		
+
 		// Skip Swagger & static assets
 		swaggerPrefixes := []string{"/v1/swagger"}
 		for _, p := range swaggerPrefixes {
@@ -41,8 +41,6 @@ func Logging(next http.Handler) http.Handler {
 		// Put into context
 		ctx := context.WithValue(r.Context(), CtxRequestID, reqID)
 		r = r.WithContext(ctx) // IMPORTANT
-
-		log.Printf("REQUEST_ID: %s", reqID)
 
 		// Limit size
 		const maxSize = 2048
@@ -74,8 +72,7 @@ func Logging(next http.Handler) http.Handler {
 			// Read the original body stream entirely
 			requestBody, err := io.ReadAll(r.Body)
 			if err != nil {
-				log.Println("Warning: Failed to read request body:", err)
-				// Don't interrupt flow, but proceed with empty body
+				logger.Error("Warning: Failed to read request body:", zap.Error(err))
 			}
 
 			if len(requestBody) > maxSize {
@@ -83,27 +80,24 @@ func Logging(next http.Handler) http.Handler {
 			}
 
 			// Log the body
-			log.Printf("REQUEST [%s] %s\n\nBody: %s", r.Method, r.URL.Path, string(requestBody))
+			logger.Info("REQUEST", zap.String("Method", r.Method), zap.String("Path", r.URL.Path), zap.String("Body", string(requestBody)))
 
 			// Replace the Request Body
 			// CRITICAL: Give the buffered body back to the request for downstream handlers
 			r.Body = io.NopCloser(bytes.NewBuffer(requestBody))
 		} else {
-			log.Printf("REQUEST [%s] %s", r.Method, fmt.Sprintf("%v%v", r.URL.Path, query.String()),)
+			logger.Info("REQUEST", zap.String("Method", r.Method), zap.String("Path", fmt.Sprintf("%v%v", r.URL.Path, query.String())))
 		}
 
 		// --- Execute Handler Chain ---
 		next.ServeHTTP(wrapped, r)
 
-		// --- RESPONSE LOGGING ---
-
 		// Log the captured status, path, latency, and captured response body
-		log.Printf("RESPONSE %d [%s] %s | Latency: %s\n\nBody: %s",
-			wrapped.statusCode,
-			r.Method,
-			fmt.Sprintf("%v%v", r.URL.Path, query.String()),
-			time.Since(start),
-			wrapped.body.String(), // Access the buffered response body
-		)
+		logger.Info("RESPONSE",
+			zap.Int("Code", wrapped.statusCode),
+			zap.String("Method", r.Method),
+			zap.String("Path", fmt.Sprintf("%v%v", r.URL.Path, query.String())),
+			zap.String("Latency", time.Since(start).String()),
+			zap.String("Body", wrapped.body.String()))
 	})
 }

@@ -34,7 +34,7 @@ func Authentication(next http.Handler) http.Handler {
 		authHeader := r.Header.Get("Authorization")
 
 		if authHeader == "" || !strings.HasPrefix(authHeader, "Bearer ") {
-			http.Error(w, "Missing Authorization Header", http.StatusUnauthorized)
+			utils.RespondError(w, http.StatusUnauthorized, "Missing Authorization Header")			
 			return
 		}
 
@@ -48,14 +48,14 @@ func Authentication(next http.Handler) http.Handler {
 		})
 
 		if err != nil || !token.Valid {
-			http.Error(w, "Invalid Token", http.StatusUnauthorized)
+			utils.RespondError(w, http.StatusUnauthorized, "Invalid Token")
 			return
 		}
 
 		// Extract claims from the token
 		claims, ok := token.Claims.(jwt.MapClaims)
 		if !ok {
-			http.Error(w, "Invalid Token Claims", http.StatusUnauthorized)
+			utils.RespondError(w, http.StatusUnauthorized, "Invalid Token Claims")			
 			return
 		}
 
@@ -114,7 +114,7 @@ func UserHandler(next http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 
-		isAdmin := user["is_admin"].(bool)		
+		isAdmin := user["is_admin"].(bool)
 
 		if isAdmin {
 			utils.RespondError(w, http.StatusForbidden, "You are not authorized to perform this action!")

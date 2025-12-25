@@ -3,6 +3,8 @@ package middleware
 import (
 	"bytes"
 	"net/http"
+
+	"go.uber.org/zap"
 )
 
 type wrappedWriter struct {
@@ -27,11 +29,11 @@ func (w *wrappedWriter) Write(p []byte) (int, error) {
     return w.ResponseWriter.Write(p)
 }
 
-type Middleware func(http.Handler) http.Handler
+type Middleware func(http.Handler, *zap.Logger) http.Handler
 
-func CreateStack(middlewares ...Middleware) Middleware {
+func CreateStack(logger *zap.Logger, middlewares ...Middleware) Middleware {
 	// Return a function that builds and returns the full http.Handler chain
-	return func(next http.Handler) http.Handler {
+	return func(next http.Handler, logger *zap.Logger) http.Handler {
 
 		// 1. Iterate BACKWARDS over the slice of middlewares
 		for i := len(middlewares) - 1; i >= 0; i-- {
@@ -39,7 +41,7 @@ func CreateStack(middlewares ...Middleware) Middleware {
 
 			// 2. Build the chain: The result of the previous iteration
 			//    becomes the 'next' handler for the current middleware.
-			next = middleware(next)
+			next = middleware(next, logger)
 		}
 
 		// The final 'next' is the complete, correctly ordered chain

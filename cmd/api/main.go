@@ -20,7 +20,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
 	"os/signal"
 	"sync"
@@ -60,32 +59,31 @@ func loadConfig() controller.Config {
 }
 
 func main() {
+	// setup zap logger
+	logger := logger.NewLogger()
+	defer logger.Sync()
+	
 	if os.Getenv("APP_ENV") != "production" {
 		if err := godotenv.Load(); err != nil {
-			log.Fatal("Error loading .env file")
+			logger.Fatal("Error loading .env file", zap.Error(err))
 			return
 		}
 	}
 
 	cfg := loadConfig()
 
-	db.RunMigrations()
+	db.RunMigrations(logger)
 
 	docs.SwaggerInfo.Schemes = []string{"https", "http"}
 	docs.SwaggerInfo.Host = fmt.Sprintf("%v", os.Getenv("SWAGGER_HOST"))
 	docs.SwaggerInfo.BasePath = fmt.Sprintf("%v", os.Getenv("SWAGGER_PATH"))
 
 	// get gormdb
-	gorm, errGorm := db.NewGorm(os.Getenv("DB_ADDR"))
+	gorm, errGorm := db.NewGorm(os.Getenv("DB_ADDR"), logger)
 
 	if errGorm != nil {
-		log.Fatal("Error connecting to gorm database")
-		panic("Error connecting to gorm database")
+		logger.Fatal("Error connecting to gorm database", zap.Error(errGorm))		
 	}
-
-	// setup zap logger
-	logger := logger.NewLogger()
-	defer logger.Sync()
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -94,7 +92,6 @@ func main() {
 	var wg sync.WaitGroup
 
 	store := store.NewStorage(gorm)
-
 	service := service.NewService(store, logger)
 
 	application := &controller.Application{

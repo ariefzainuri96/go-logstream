@@ -1,15 +1,15 @@
 package middleware
 
 import (
-	"log"
 	"net/http"
 	"runtime/debug"
 
 	"github.com/ariefzainuri96/go-logstream/cmd/api/utils"
+	"go.uber.org/zap"
 )
 
 // Recoverer captures panics, logs the stack trace, and returns a 500 error.
-func Recoverer(next http.Handler) http.Handler {
+func Recoverer(next http.Handler, logger *zap.Logger) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		// 1. Set up the defer function to run after the handler chain finishes (or panics)
@@ -17,7 +17,7 @@ func Recoverer(next http.Handler) http.Handler {
 			if rvr := recover(); rvr != nil {
 
 				// 2. A panic occurred! Log the full stack trace.
-				log.Printf("PANIC RECOVERED: %v", rvr)
+				logger.Info("PANIC RECOVERED", zap.Any("Log", rvr))
 
 				// Optional: You can get the stack trace here for detailed logging
 				stack := debug.Stack()

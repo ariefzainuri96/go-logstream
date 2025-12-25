@@ -18,21 +18,21 @@ type AuthServiceImpl struct {
 func NewAuthService(store store.Storage, logger *zap.Logger) *AuthServiceImpl {
 	return &AuthServiceImpl{
 		logger: logger,
-		store: store,
+		store:  store,
 	}
 }
 
-func (s *AuthServiceImpl) Register(ctx context.Context, req request.RegisterRequest) (error) {
-	_, err := s.store.IAuth.Register(ctx, req)
+func (s *AuthServiceImpl) Register(ctx context.Context, req request.RegisterRequest) (uint, error) {
+	id, err := s.store.IAuth.Register(ctx, req)
 
 	if err != nil {
-		return err
+		return 0, err
 	}
 
-	return nil
+	return id, nil
 }
 
-func (s *AuthServiceImpl) Login(ctx context.Context, req request.LoginRequest) (entity.User, string, error) {		
+func (s *AuthServiceImpl) Login(ctx context.Context, req request.LoginRequest) (entity.User, string, error) {
 	user, token, err := s.store.IAuth.Login(ctx, req)
 
 	if err != nil {
@@ -42,7 +42,7 @@ func (s *AuthServiceImpl) Login(ctx context.Context, req request.LoginRequest) (
 	return user, token, nil
 }
 
-func (s *AuthServiceImpl) ForgotPassword(ctx context.Context, req request.LoginRequest) (string, error) {	
+func (s *AuthServiceImpl) ForgotPassword(ctx context.Context, req request.LoginRequest) (string, error) {
 	msg, err := s.store.IAuth.ForgotPassword(ctx, req)
 
 	if err != nil {

@@ -28,6 +28,7 @@ func (app *Application) RunServer(ctx context.Context, cfg Config, logger *zap.L
 	mux := http.NewServeMux()
 
 	stack := middleware.CreateStack(
+		logger,
 		middleware.Logging,
 		middleware.Recoverer,
 	)
@@ -42,7 +43,7 @@ func (app *Application) RunServer(ctx context.Context, cfg Config, logger *zap.L
 
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%v", cfg.HTTPPort),
-		Handler:      stack(mux),
+		Handler:      stack(mux, logger),
 		WriteTimeout: 30 * time.Second,
 		ReadTimeout:  10 * time.Second,
 		IdleTimeout:  1 * time.Minute,

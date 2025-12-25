@@ -2,10 +2,10 @@ package db
 
 import (
 	"context"
-	"log"
 	"time"
 
 	_ "github.com/lib/pq"
+	"go.uber.org/zap"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -28,18 +28,17 @@ func (d *GormDB) ExecWithTimeoutVal(ctx context.Context, fn func(tx *gorm.DB) *g
 	return fn(d.gormDb.WithContext(ctx))
 }
 
-func NewGorm(addr string) (*GormDB, error) {
+func NewGorm(addr string, logger *zap.Logger) (*GormDB, error) {
 	// Use your existing DSN (Data Source Name) / connection string
 	// Example DSN: "host=localhost user=user password=pass dbname=ecommerce-db port=5432 sslmode=disable"
 
 	db, err := gorm.Open(postgres.Open(addr), &gorm.Config{})
 
-	if err != nil {
-		log.Fatalf("Failed to connect to the database with GORM: %v", err)
+	if err != nil {		
 		return &GormDB{}, err
 	}
 
-	log.Println("Database connection successfully established with GORM.")
+	logger.Info("Database connection successfully established with GORM.")
 
 	return &GormDB{
 		gormDb: db,

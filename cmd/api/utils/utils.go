@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/ariefzainuri96/go-logstream/cmd/api/dto/response"
+	"github.com/ariefzainuri96/go-logstream/cmd/api/dto/response"	
 )
 
 func WriteJSON(w http.ResponseWriter, status int, data interface{}) {
@@ -14,7 +14,7 @@ func WriteJSON(w http.ResponseWriter, status int, data interface{}) {
 	if err != nil {
 		log.Printf("ERROR: Failed to marshal response data: %v", err)
 		// Fallback to plain text 500 error if marshalling fails
-		http.Error(w, "Internal Server Error: Failed to serialize response.", http.StatusInternalServerError)
+		RespondError(w, http.StatusInternalServerError, "Internal Server Error: Failed to serialize response.")		
 		return
 	}
 

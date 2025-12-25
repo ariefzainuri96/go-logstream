@@ -35,7 +35,7 @@ func (app *Application) login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, token, err := app.Service.AuthService.Login(r.Context(), data)
+	user, token, err := app.Service.IAuth.Login(r.Context(), data)
 
 	if err != nil {
 		utils.RespondError(w, http.StatusInternalServerError, "Invalid email/password!")
@@ -82,7 +82,7 @@ func (app *Application) register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = app.Service.AuthService.Register(r.Context(), data)
+	_, err = app.Service.IAuth.Register(r.Context(), data)
 
 	if err != nil {
 		utils.RespondError(w, http.StatusInternalServerError, err.Error())
