@@ -116,6 +116,139 @@ const docTemplate = `{
                 }
             }
         },
+        "/posts/": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get All Post",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "post"
+                ],
+                "summary": "Get Post",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "name": "orderBy",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "page",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "name": "pageSize",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "name": "projectId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "searchAll",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "searchField",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "searchValue",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "sort",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.PostsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/response.BaseResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Add new Post",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "post"
+                ],
+                "summary": "Add Post",
+                "parameters": [
+                    {
+                        "description": "Add Post request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.AddPostRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.PostResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.BaseResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/response.BaseResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/projects/": {
             "get": {
                 "security": [
@@ -427,6 +560,38 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "entity.Post": {
+            "type": "object",
+            "properties": {
+                "category": {
+                    "type": "string"
+                },
+                "content": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "project": {
+                    "$ref": "#/definitions/entity.Project"
+                },
+                "project_id": {
+                    "type": "integer"
+                },
+                "scheduled_at": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
         "entity.Project": {
             "type": "object",
             "properties": {
@@ -437,36 +602,51 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "name": {
+                    "description": "User       User   ` + "`" + `json:\"user\"` + "`" + `",
                     "type": "string"
                 },
                 "slug": {
                     "type": "string"
                 },
-                "user": {
-                    "$ref": "#/definitions/entity.User"
+                "updated_at": {
+                    "type": "string"
                 },
                 "user_id": {
                     "type": "integer"
+                },
+                "webhook_provider": {
+                    "type": "string"
                 },
                 "webhook_url": {
                     "type": "string"
                 }
             }
         },
-        "entity.User": {
+        "request.AddPostRequest": {
             "type": "object",
+            "required": [
+                "content",
+                "project_id",
+                "title"
+            ],
             "properties": {
-                "created_at": {
+                "category": {
+                    "type": "string",
+                    "maxLength": 50
+                },
+                "content": {
                     "type": "string"
                 },
-                "email": {
-                    "type": "string"
-                },
-                "id": {
+                "project_id": {
                     "type": "integer"
                 },
-                "password": {
-                    "type": "string"
+                "status": {
+                    "type": "string",
+                    "maxLength": 20
+                },
+                "title": {
+                    "type": "string",
+                    "maxLength": 255
                 }
             }
         },
@@ -572,6 +752,40 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "total_page": {
+                    "type": "integer"
+                }
+            }
+        },
+        "response.PostResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "post": {
+                    "$ref": "#/definitions/entity.Post"
+                },
+                "status": {
+                    "type": "integer"
+                }
+            }
+        },
+        "response.PostsResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "pagination": {
+                    "$ref": "#/definitions/response.PaginationMetadata"
+                },
+                "posts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.Post"
+                    }
+                },
+                "status": {
                     "type": "integer"
                 }
             }

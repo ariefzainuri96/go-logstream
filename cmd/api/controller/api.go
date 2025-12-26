@@ -37,6 +37,8 @@ func (app *Application) RunServer(ctx context.Context, cfg Config, logger *zap.L
 
 	mux.Handle("/v1/projects/", middleware.Authentication(http.StripPrefix("/v1/projects", app.ProjectController())))
 
+	mux.Handle("/v1/posts/", middleware.Authentication(http.StripPrefix("/v1/posts", app.PostController())))
+
 	mux.Handle("v1/public/", http.StripPrefix("/v1/public", app.PublicController()))
 
 	mux.Handle("/v1/swagger/", httpSwagger.Handler(

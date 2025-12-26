@@ -7,11 +7,12 @@ import (
 // @Model
 type Project struct {
 	UpdateEntity
-	UserId     uint   `gorm:"type:int;not null;column:user_id" json:"user_id"`
+	UserId uint `gorm:"type:int;not null;column:user_id" json:"user_id"`
 	// User       User   `json:"user"`
-	Name       string `gorm:"type:varchar(255);not null;column:name" json:"name"`
-	Slug       string `gorm:"type:varchar(255);not null;column:slug" json:"slug"`
-	WebhookUrl string `gorm:"type:text;not null;column:webhook_url" json:"webhook_url"`
+	Name            string `gorm:"type:varchar(255);not null;column:name" json:"name"`
+	Slug            string `gorm:"type:varchar(255);not null;column:slug" json:"slug"`
+	WebhookProvider string `gorm:"type:varchar(255);column:webhook_provider" json:"webhook_provider"`
+	WebhookUrl      string `gorm:"type:text;column:webhook_url" json:"webhook_url"`
 }
 
 /*

@@ -4,14 +4,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/ariefzainuri96/go-logstream/cmd/api/dto/entity"
 	"github.com/ariefzainuri96/go-logstream/cmd/api/dto/request"
 	"go.uber.org/zap"
 
+	"github.com/ariefzainuri96/go-logstream/cmd/api/middleware"
 	"github.com/ariefzainuri96/go-logstream/internal/db"
 	"github.com/ariefzainuri96/go-logstream/internal/utils"
-	"github.com/ariefzainuri96/go-logstream/cmd/api/middleware"
 	"gorm.io/gorm"
 )
 
@@ -80,8 +81,11 @@ func (s *ProjectStore) AddProject(ctx context.Context, userId uint, req request.
 
 func (s *ProjectStore) GetProject(ctx context.Context, userId uint, req request.PaginationRequest) (utils.PaginateResult[entity.Project], error) {
 	var projects []entity.Project
+	
+	ctx, cancel := context.WithTimeout(ctx, 15 * time.Second)
+	defer cancel()
 
-	query := s.db.GormDb.Where("user_id = ?", userId).Find(&projects)
+	query := s.db.GormDb.WithContext(ctx).Where("user_id = ?", userId).Find(&projects)	
 
 	var searchAllQuery string
 

@@ -1,21 +1,18 @@
 package entity
 
 import (
-	"time"
-
 	_ "gorm.io/gorm"
 )
 
 // @Model
 type Post struct {
 	BaseEntity
-	ProjectId   uint       `gorm:"type:int;not null;column:project_id" json:"project_id"`
-	Project     Project    `json:"project"`
-	Title       string     `gorm:"type:varchar(255);not null;column:title" json:"title"`
-	Content     string     `gorm:"type:text;not null;column:content" json:"content"`
-	Category    string     `gorm:"type:varchar(50);not null;column:category" json:"category"`
-	Status      string     `gorm:"type:varchar(20);not null;column:status" json:"status"`
-	ScheduledAt *time.Time `gorm:"column:scheduled_at" json:"scheduled_at"`
+	ProjectId uint    `gorm:"type:int;not null;column:project_id" json:"project_id"`
+	Project   Project `json:"project"`
+	Title     string  `gorm:"type:varchar(255);not null;column:title" json:"title"`
+	Content   string  `gorm:"type:text;not null;column:content" json:"content"`
+	Category  string  `gorm:"type:varchar(50);not null;column:category" json:"category"` // 'feature', 'bugfix', 'maintenance'
+	Status    string  `gorm:"type:varchar(20);not null;column:status" json:"status"` // 'draft', 'published'
 }
 
 /*

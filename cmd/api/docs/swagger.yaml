@@ -1,4 +1,25 @@
 definitions:
+  entity.Post:
+    properties:
+      category:
+        type: string
+      content:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: integer
+      project:
+        $ref: '#/definitions/entity.Project'
+      project_id:
+        type: integer
+      scheduled_at:
+        type: string
+      status:
+        type: string
+      title:
+        type: string
+    type: object
   entity.Project:
     properties:
       created_at:
@@ -6,26 +27,38 @@ definitions:
       id:
         type: integer
       name:
+        description: User       User   `json:"user"`
         type: string
       slug:
         type: string
-      user:
-        $ref: '#/definitions/entity.User'
+      updated_at:
+        type: string
       user_id:
         type: integer
+      webhook_provider:
+        type: string
       webhook_url:
         type: string
     type: object
-  entity.User:
+  request.AddPostRequest:
     properties:
-      created_at:
+      category:
+        maxLength: 50
         type: string
-      email:
+      content:
         type: string
-      id:
+      project_id:
         type: integer
-      password:
+      status:
+        maxLength: 20
         type: string
+      title:
+        maxLength: 255
+        type: string
+    required:
+    - content
+    - project_id
+    - title
     type: object
   request.AddProjectRequest:
     properties:
@@ -95,6 +128,28 @@ definitions:
       total_data:
         type: integer
       total_page:
+        type: integer
+    type: object
+  response.PostResponse:
+    properties:
+      message:
+        type: string
+      post:
+        $ref: '#/definitions/entity.Post'
+      status:
+        type: integer
+    type: object
+  response.PostsResponse:
+    properties:
+      message:
+        type: string
+      pagination:
+        $ref: '#/definitions/response.PaginationMetadata'
+      posts:
+        items:
+          $ref: '#/definitions/entity.Post'
+        type: array
+      status:
         type: integer
     type: object
   response.ProjectResponse:
@@ -192,6 +247,89 @@ paths:
       summary: Register
       tags:
       - auth
+  /posts/:
+    get:
+      consumes:
+      - application/json
+      description: Get All Post
+      parameters:
+      - in: query
+        name: orderBy
+        type: string
+      - in: query
+        name: page
+        required: true
+        type: integer
+      - in: query
+        name: pageSize
+        required: true
+        type: integer
+      - in: query
+        name: projectId
+        type: integer
+      - in: query
+        name: searchAll
+        type: string
+      - in: query
+        name: searchField
+        type: string
+      - in: query
+        name: searchValue
+        type: string
+      - in: query
+        name: sort
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.PostsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get Post
+      tags:
+      - post
+    post:
+      consumes:
+      - application/json
+      description: Add new Post
+      parameters:
+      - description: Add Post request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.AddPostRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.PostResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Add Post
+      tags:
+      - post
   /projects/:
     get:
       consumes:
